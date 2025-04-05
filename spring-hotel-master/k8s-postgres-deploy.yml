@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-hotel-deploy
+  labels:
+    hotel: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      hotel: postgres
+  template:
+    metadata:
+      name: pod-postgres
+      labels:
+        hotel: postgres
+    spec:
+      containers:
+        - name: cont-postgres
+          image: postgres:17
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-hotel-secret 
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: "HotelDB"
+          volumeMounts:
+            - name: hotel-vol
+              mountPath: /data
+      volumes:
+        - name: hotel-vol
+          persistentVolumeClaim:
+            claimName: postgres-hotel-pvc
+                  
+

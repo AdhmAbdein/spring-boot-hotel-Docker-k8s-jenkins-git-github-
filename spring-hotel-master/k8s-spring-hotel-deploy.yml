@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: spring-hotel-deploy
+  labels:
+    hotel: spring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       hotel: spring
+  template:
+    metadata:
+      name: pod-spring-hotel
+      labels: 
+        hotel: spring
+    spec:
+      containers:
+        - name: cont-spring-hotel
+          image: adhmabdein/springhotel
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://hotelsvc:5432/HotelDB"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-hotel-secret
+                  key: POSTGRES_PASSWORD
+    

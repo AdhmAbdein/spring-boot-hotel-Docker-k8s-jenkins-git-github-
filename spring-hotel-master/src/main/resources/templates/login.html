@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta charset="utf-8">
+     <title>Logowanie</title>
+    <div th:replace="shared/header :: header-css"/>
+</head>
+
+<body>
+<div th:replace="shared/header :: header('login')"/>
+<div class="container">
+    <form method="POST" action="/login" class="form-signin">
+        <h2 class="form-heading">Logowanie</h2>
+
+        <div class="form-group ${error != null ? 'has-error' : ''}">
+            <span>Login:</span>
+            <input name="username" type="text" class="form-control" placeholder="Username"
+                   autofocus="true"/>
+            <span>Hasło:</span>
+            <input name="password" type="password" class="form-control" placeholder="Password"/>
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Zaloguj się</button>
+
+        </div>
+    </form>
+</div>
+<div th:replace="shared/footer :: footer"></div>
+</body>

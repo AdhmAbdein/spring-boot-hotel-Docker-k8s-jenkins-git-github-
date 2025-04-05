@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel</title>
+    <div th:replace="shared/header :: header-css"/>
+</head>
+<body>
+
+<div th:replace="shared/header :: header('userList')"/>
+<div class="container-fluid text-center">
+    <div class="row content">
+        <div class="col-sm-2 sidenav">
+
+            <p></p>
+            <div sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-success" href="/addUser">Dodaj użytkownika</a>
+            </div>
+            <br>
+            <div sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-success" href="reservationFormADM.html">Dodaj rezerwację</a>
+            </div>
+
+            <div sec:authorize="hasRole('USER')">
+                <a class="btn btn-success" href="reservationFormUSR.html">Zarezerwuj pokój</a>
+
+            </div>
+
+        </div>
+
+        <div class="col-sm-8 text-left">
+
+            <form th:method="POST" th:action="@{userList.html}" th:object="${searchCommand}">
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <input th:field="*{phrase}" placeholder="imię/nazwisko/login/email/numer telefonu" class="form-control"
+                               th:classappend="${#fields.hasErrors('phrase')}?'is-invalid'"/>
+                        <div class="error text-danger" th:if="${#fields.hasErrors('phrase')}">
+                            <p th:each="err : ${#fields.errors('phrase')}" th:text="${err}"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+
+
+                    </div>
+                    <div class="form-group col-md-3">
+
+                    </div>
+
+
+                </div>
+                <div class="row">
+
+                    <div class="form-group col-md-8"></div>
+
+                    <div class="form-group col-md-2">
+                        <a th:if="${searchCommand.isEmpty() eq false or #fields.hasErrors('*')}" th:href="@{reservationList.html(all)}" class="btn btn-success">
+                            <span class="glyphicon glyphicon-refresh"></span> Pokaż wszystko
+                        </a>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <button type="submit" class="btn btn-info">
+                            <span class="glyphicon glyphicon-search"></span> Wyszukaj
+                        </button>
+
+                    </div>
+                </div>
+            </form>
+
+            <div th:if="${userListPage.hasContent() eq false}">
+                <span>Brak użytkowników</span>
+            </div>
+            <div th:if="${userListPage.hasContent() eq true}">
+                  <span th:if="${searchCommand.isEmpty()}">
+                Baza zawiera [[${userListPage.totalElements}]] użytkowników
+            </span>
+                <span th:unless="${searchCommand.isEmpty()}">
+                Wynik wyszukiwania: [[${userListPage.totalElements}]] użytkowników
+            </span>
+            </div>
+
+
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Login</th>
+                    <th>Imię i nazwisko</th>
+                    <th>Email</th>
+
+                    <th>Numer telefonu</th>
+                    <th>Opcje</th>
+
+
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${userListPage.content}">
+
+                    <td>
+                       [[${user.login}]]</a>
+
+                    </td>
+                    <td>
+
+                            <span > [[${user.firstName}]]</span>
+                            <span > [[${user.lastName}]]</span>
+                        </a>
+
+                    </td>
+
+                    <td>
+                        <span > [[${user.email}]]</span>
+                    </td>
+                    <td>
+                        <span > [[${user.phoneNumber}]]</span>
+                    </td>
+                    <td>
+                    <td style="align-content: center">
+                        <a class="btn btn-danger" sec:authorize="isAuthenticated()" th:href="@{/userList.html(id=${user.id})}">Usuń</a>
+                        <a class="btn btn-success" th:href="@{/editUser.html(id=${user.id})}">Edytuj</a>
+                    </td>
+                    </td>
+
+
+
+
+                </tr>
+
+                </tbody>
+            </table>
+            <div th:replace="shared/pagination :: pager(userList.html, ${userListPage})"></div>
+
+
+
+
+
+        </div>
+    </div>
+    <div class="col-sm-2 sidenav">
+
+        <div class="well">
+            <label style="color:darkred; margin-top: 20px;" sec:authorize="isAuthenticated()">
+                Witaj <span sec:authentication="name"/>!
+            </label>
+        </div>
+        <div class="well">
+            <a sec:authorize="isAuthenticated()" class="btn btn-success" href="accountDetails.html">Twoje konto</a>
+
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+
+</body>
+</html>

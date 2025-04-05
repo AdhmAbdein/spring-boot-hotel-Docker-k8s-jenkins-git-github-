@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel</title>
+    <div th:replace="shared/header :: header-css"/>
+</head>
+<body>
+
+<div th:replace="shared/header :: header('reservation')"/>
+<div class="container-fluid text-center">
+    <div class="row content">
+        <div class="col-sm-2 sidenav">
+            <p></p>
+            <div sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-success" href="/addUser">Dodaj użytkownika</a>
+            </div>
+            <br>
+            <div sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-success" href="reservationFormADM.html">Dodaj rezerwację</a>
+            </div>
+
+            <div sec:authorize="hasRole('USER')">
+                <a class="btn btn-success" href="reservationFormUSR.html">Zarezerwuj pokój</a>
+
+            </div>
+
+
+        </div>
+
+        <div class="col-sm-8 text-left">
+
+            <form th:method="POST" th:action="@{reservationList.html}" th:object="${searchCommand}">
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <input th:field="*{phrase}" placeholder="imię/nazwisko/login Gościa hotelu" class="form-control"
+                               th:classappend="${#fields.hasErrors('phrase')}?'is-invalid'"/>
+                        <div class="error text-danger" th:if="${#fields.hasErrors('phrase')}">
+                            <p th:each="err : ${#fields.errors('phrase')}" th:text="${err}"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+
+
+                    </div>
+                    <div class="form-group col-md-3">
+
+                    </div>
+
+
+                </div>
+                <div class="row">
+
+                    <div class="form-group col-md-8"></div>
+
+                    <div class="form-group col-md-2">
+                        <a th:if="${searchCommand.isEmpty() eq false or #fields.hasErrors('*')}" th:href="@{reservationList.html(all)}" class="btn btn-success">
+                            <span class="glyphicon glyphicon-refresh"></span> Pokaż wszystko
+                        </a>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <button type="submit" class="btn btn-info">
+                            <span class="glyphicon glyphicon-search"></span> Wyszukaj
+                        </button>
+
+                    </div>
+                </div>
+            </form>
+
+            <div th:if="${roomReservationListPage.hasContent() eq false}">
+                <span>Brak rezerwacji</span>
+                   </div>
+            <div th:if="${roomReservationListPage.hasContent() eq true}">
+                  <span th:if="${searchCommand.isEmpty()}">
+                Baza zawiera [[${roomReservationListPage.totalElements}]] rezerwacji
+            </span>
+                <span th:unless="${searchCommand.isEmpty()}">
+                Wynik wyszukiwania: [[${roomReservationListPage.totalElements}]] rezerwacji
+            </span>
+            </div>
+
+
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Numer pokoju</th>
+                    <th>Rezerwujący</th>
+                    <th>Opcje</th>
+                    <th>Początek rezerwacji</th>
+
+                    <th>Koniec rezerwacji</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Liczba osób</th>
+                    <th>Cena </th>
+                    <th>Czy opłacono?</th>
+                    <th>Czy zweryfikowano?</th>
+
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="roomReservation : ${roomReservationListPage.content}">
+
+                    <td>
+                       <a  th:href="@{/reservationList.html(rid=${roomReservation.room.id})}">[[${roomReservation.room.roomNumber}]]</a>
+
+                    </td>
+                    <td>
+                        <a th:href="@{/reservationList.html(uid=${roomReservation.user.id})}">
+                            <span > [[${roomReservation.user.firstName}]]</span>
+                            <span > [[${roomReservation.user.lastName}]]</span>
+                        </a>
+
+                    </td>
+                    <td style="align-content: center">
+                        <span th:if="${roomReservation.reservationStartDate.after(#dates.createNow())}">
+                        <a class="btn btn-danger" sec:authorize="isAuthenticated()" th:href="@{/reservationList.html(id=${roomReservation.id})}">Anuluj rezerwację</a>
+                       </span>
+                        <span th:if="${roomReservation.reservationEndDate.before(#dates.createNow())}">
+                        <a class="btn btn-danger" sec:authorize="isAuthenticated()" th:href="@{/reservationList.html(id=${roomReservation.id})}">Usuń </a>
+                            <p>Nieaktualna rezerwacja</p>
+                       </span>
+                        <span th:if="${roomReservation.reservationEndDate.after(#dates.createNow()) and roomReservation.reservationStartDate.before(#dates.createNow())}">
+                            Rezerwacja trwa
+                            <a class="btn btn-success" th:href="@{/editReservationFormADM.html(id=${roomReservation.id})}">Modyfikuj rezerwację</a>
+                        </span>
+                        <span th:if="${roomReservation.reservationStartDate.after(#dates.createNow())}">
+                        <a class="btn btn-success" th:href="@{/editReservationFormADM.html(id=${roomReservation.id})}">Modyfikuj rezerwację</a>
+                        </span>
+                    </td>
+                    <td>
+                        <span  th:text="${#dates.format(roomReservation.reservationStartDate, 'dd-MM-yyyy')}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${#dates.format(roomReservation.reservationEndDate, 'dd-MM-yyyy')}"></span>
+
+                    </td>
+                    <td>
+                        <span th:text="${#dates.format(roomReservation.checkInDate, 'dd-MM-yyyy')}"></span>
+
+                    </td>
+                    <td>
+                        <span th:text="${#dates.format(roomReservation.checkOutDate, 'dd-MM-yyyy')}"></span>
+
+                    </td>
+                    <td>
+                        <span > [[${roomReservation.numberOfPeople}]]</span>
+                    </td>
+                    <td>
+                        <span > [[${roomReservation.endPrice}]]</span>
+                    </td>
+                    <td>
+                        <div th:if="${roomReservation.paid eq true}">
+                        <span > Tak</span>
+                        </div>
+                        <div th:if="${roomReservation.paid eq false}">
+                            <span >Nie</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div th:if="${roomReservation.verified eq true}">
+                            <span > Tak</span>
+                        </div>
+                        <div th:if="${roomReservation.verified eq false}">
+                            <span >Nie</span>
+                        </div>
+                    </td>
+
+
+
+                </tr>
+
+                </tbody>
+            </table>
+                <div th:replace="shared/pagination :: pager(reservationList.html, ${roomReservationListPage})"></div>
+
+
+
+
+
+             </div>
+        </div>
+        <div class="col-sm-2 sidenav">
+            <div class="well">
+                <label style="color:darkred; margin-top: 20px;" sec:authorize="isAuthenticated()">
+                    Witaj <span sec:authentication="name"/>!
+                </label>
+            </div>
+            <div class="well">
+                <a sec:authorize="isAuthenticated()" class="btn btn-success" href="accountDetails.html">Twoje konto</a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+</body>
+</html>
